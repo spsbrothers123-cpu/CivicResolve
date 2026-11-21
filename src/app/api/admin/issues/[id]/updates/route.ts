@@ -27,16 +27,17 @@ export async function POST(
       { update: updateRecord, message: "Administrative update logged successfully." },
       { status: 201 }
     );
-  } catch (error: any) {
-    if (error?.name === "ZodError") {
+  } catch (error: unknown) {
+    const errObj = error as { name?: string; errors?: Array<{ message: string }>; status?: number; message?: string };
+    if (errObj?.name === "ZodError" && errObj.errors) {
       return NextResponse.json(
-        { error: error.errors[0]?.message || "Invalid update input." },
+        { error: errObj.errors[0]?.message || "Invalid update input." },
         { status: 400 }
       );
     }
-    const status = error.status || 500;
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to record update." },
+      { error: errObj.message || "Failed to record update." },
       { status }
     );
   }

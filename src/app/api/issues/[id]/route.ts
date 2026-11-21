@@ -38,11 +38,12 @@ export async function GET(
     }
 
     return NextResponse.json({ issue });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GET /api/issues/[id] error:", error);
-    const status = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to fetch complaint." },
+      { error: errObj.message || "Failed to fetch complaint." },
       { status }
     );
   }
@@ -70,17 +71,18 @@ export async function PATCH(
       issue: updatedIssue,
       message: "Complaint updated successfully.",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("PATCH /api/issues/[id] error:", error);
-    if (error?.name === "ZodError") {
+    const errObj = error as { name?: string; errors?: Array<{ message: string }>; status?: number; message?: string };
+    if (errObj?.name === "ZodError" && errObj.errors) {
       return NextResponse.json(
-        { error: error.errors[0]?.message || "Invalid update payload." },
+        { error: errObj.errors[0]?.message || "Invalid update payload." },
         { status: 400 }
       );
     }
-    const status = error.status || 500;
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to update complaint." },
+      { error: errObj.message || "Failed to update complaint." },
       { status }
     );
   }

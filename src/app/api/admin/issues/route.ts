@@ -31,11 +31,12 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json({ issues, total });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GET /api/admin/issues error:", error);
-    const status = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to fetch complaints." },
+      { error: errObj.message || "Failed to fetch complaints." },
       { status }
     );
   }

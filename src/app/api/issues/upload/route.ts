@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const originalFilename = (file as any).name || "evidence.jpg";
+    const originalFilename = typeof file === "object" && file && "name" in file ? String(file.name) : "evidence.jpg";
 
     const result = await uploadEvidence(user.id, buffer, originalFilename, client);
 
@@ -29,11 +29,12 @@ export async function POST(req: NextRequest) {
       signedUrl: result.signedUrl,
       message: "Evidence uploaded successfully.",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Evidence upload API error:", error);
-    const status = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to upload evidence." },
+      { error: errObj.message || "Failed to upload evidence." },
       { status }
     );
   }

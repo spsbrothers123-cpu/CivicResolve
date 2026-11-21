@@ -86,9 +86,9 @@ export default function CitizenAuthPage() {
         await refreshProfile();
         router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Auth submit error:", err);
-      setErrorMessage(err.message || "An unexpected error occurred during authentication.");
+      setErrorMessage(err instanceof Error ? err.message : "An unexpected error occurred during authentication.");
     } finally {
       setLoading(false);
     }

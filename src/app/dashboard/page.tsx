@@ -45,9 +45,9 @@ function CitizenDashboardContent() {
         if (mounted) {
           setIssues(data.issues || []);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (mounted) {
-          setError(err.message || "Failed to load dashboard data.");
+          setError(err instanceof Error ? err.message : "Failed to load dashboard data.");
         }
       } finally {
         if (mounted) {

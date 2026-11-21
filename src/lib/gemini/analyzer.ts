@@ -64,9 +64,9 @@ Do NOT wrap the output in markdown codeblocks (no \`\`\`json). Output pure JSON.
  * Reconciles common municipal synonyms (e.g. Urgent -> Critical, Electrical -> Electricity, Stormwater -> Drainage, General -> Other).
  * Preserves unrecognized values so Zod can reject invalid schemas cleanly.
  */
-export function normalizeAiTriagePayload(parsed: any): any {
-  if (!parsed || typeof parsed !== "object") return parsed;
-  const normalized = { ...parsed };
+export function normalizeAiTriagePayload(parsed: unknown): Record<string, unknown> {
+  if (!parsed || typeof parsed !== "object") return {};
+  const normalized: Record<string, unknown> = { ...(parsed as Record<string, unknown>) };
 
   // 1. Normalize Category
   if (typeof normalized.category === "string") {
@@ -325,7 +325,7 @@ Complaint Description: ${input.description}
 ${input.location_text ? `Reported Location: ${input.location_text}` : ""}
 ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
 
-    const contents: any[] = [{ text: promptText }];
+    const contents: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [{ text: promptText }];
     if (imagePart) {
       contents.push(imagePart);
     }
@@ -347,9 +347,9 @@ ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
       new Set([configuredModel, "gemini-3.5-flash-lite", "gemini-3.8-flash"].filter(Boolean))
     );
 
-    let response: any;
+    let response: { text?: string } | null = null;
     let successfulModel = configuredModel;
-    let lastError: any = null;
+    let lastError: unknown = null;
     const startTime = Date.now();
 
     try {
@@ -379,13 +379,14 @@ ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
             successfulModel = modelCandidate;
             break;
           }
-        } catch (candidateErr: any) {
+        } catch (candidateErr: unknown) {
           lastError = candidateErr;
+          const errObj = candidateErr as { status?: number; message?: string };
           // If the model was retired / 404 NOT_FOUND, attempt modern fallback model within shared budget
           const isModelNotFound =
-            candidateErr?.status === 404 ||
-            candidateErr?.message?.includes("is no longer available") ||
-            candidateErr?.message?.includes("not found");
+            errObj?.status === 404 ||
+            errObj?.message?.includes("is no longer available") ||
+            errObj?.message?.includes("not found");
           if (!isModelNotFound || abortController.signal.aborted) {
             throw candidateErr;
           }
@@ -401,7 +402,7 @@ ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
         clearTimeout(timeoutId);
       }
     }
-    const rawText = response.text || "";
+    const rawText = response?.text || "";
 
     // Strip any markdown fences if present
     const cleanJson = rawText
@@ -409,10 +410,10 @@ ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
       .replace(/\s*```$/i, "")
       .trim();
 
-    let parsed: any;
+    let parsed: unknown;
     try {
       parsed = JSON.parse(cleanJson);
-    } catch (parseError) {
+    } catch (_parseError) {
       throw new Error(`Gemini response is not valid JSON: ${rawText.slice(0, 100)}...`);
     }
 
@@ -444,14 +445,15 @@ ${input.category ? `Citizen Suggested Category: ${input.category}` : ""}`;
       provider: "gemini",
       modelName: successfulModel,
     };
-  } catch (error: any) {
-    console.warn(`[CivicResolve AI] Gemini analysis encountered an issue (${error.message}). Gracefully engaging deterministic civic classifier.`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.warn(`[CivicResolve AI] Gemini analysis encountered an issue (${errorMsg}). Gracefully engaging deterministic civic classifier.`);
 
     return {
       analysis: getDeterministicAnalysis(input),
       provider: "deterministic_fallback",
       modelName: configuredModel,
-      error: error.message,
+      error: errorMsg,
     };
   }
 }

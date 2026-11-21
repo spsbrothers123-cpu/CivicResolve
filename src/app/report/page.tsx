@@ -165,9 +165,9 @@ export default function ReportIssuePage() {
       const reference = issueData.reference_number || issueData.issue?.id || "CIV-1001";
       setCreatedIssueId(reference);
       setStep("success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Submission error:", err);
-      setErrorMessage(err.message || "Failed to submit complaint. Please check your network and try again.");
+      setErrorMessage(err instanceof Error ? err.message : "Failed to submit complaint. Please check your network and try again.");
     } finally {
       setIsSubmitting(false);
       setSubmissionStage("idle");

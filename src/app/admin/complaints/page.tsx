@@ -44,9 +44,9 @@ export default function AdminComplaintManagementPage() {
           setIssues(data.issues || []);
           setTotal(data.total || 0);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (mounted) {
-          setError(err.message || "Failed to load complaints.");
+          setError(err instanceof Error ? err.message : "Failed to load complaints.");
         }
       } finally {
         if (mounted) {

@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
     let effectiveImagePath = image_path;
-    let existingAnalysis: any = null;
+    let existingAnalysis: Record<string, unknown> | null = null;
 
     // 4. Resource authorization and ownership verification
     if (issue_id) {
@@ -118,15 +118,16 @@ export async function POST(req: NextRequest) {
         effectiveImagePath = issueRecord.image_path;
       }
 
-      existingAnalysis = issueRecord.ai_analysis;
+      existingAnalysis = issueRecord.ai_analysis as Record<string, unknown> | null;
 
       // Deduplication: Avoid duplicate concurrent AI analysis if valid analysis already exists
-      if (existingAnalysis && !force && existingAnalysis.confidence >= 0.7) {
+      const existingConfidence = typeof existingAnalysis?.confidence === "number" ? existingAnalysis.confidence : 0;
+      if (existingAnalysis && !force && existingConfidence >= 0.7) {
         return NextResponse.json(
           {
             analysis: existingAnalysis,
-            provider: existingAnalysis.provider || "gemini",
-            modelName: existingAnalysis.model || "cached",
+            provider: (existingAnalysis.provider as string) || "gemini",
+            modelName: (existingAnalysis.model as string) || "cached",
             cached: true,
             message: "Existing AI triage record returned. Pass force: true to re-analyze.",
           },
@@ -171,11 +172,12 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API /api/ai/analyze error:", error);
-    const statusCode = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const statusCode = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to analyze civic issue." },
+      { error: errObj.message || "Failed to analyze civic issue." },
       { status: statusCode }
     );
   }

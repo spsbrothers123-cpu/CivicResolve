@@ -71,8 +71,8 @@ export default function AdminComplaintWorkspacePage() {
       if (currentIssue.resolution_note) {
         setAdminNote(currentIssue.resolution_note);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to load complaint details.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load complaint details.");
     } finally {
       setLoading(false);
     }
@@ -142,8 +142,8 @@ export default function AdminComplaintWorkspacePage() {
         setAppliedAiNotice("AI analysis completed successfully. Recommendations are ready for review.");
         setTimeout(() => setAppliedAiNotice(null), 5000);
       }
-    } catch (err: any) {
-      alert(err.message || "Failed to trigger AI triage.");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to trigger AI triage.");
     } finally {
       setAnalyzingAi(false);
     }
@@ -197,9 +197,9 @@ export default function AdminComplaintWorkspacePage() {
 
       setSaveSuccess(true);
       await fetchIssue();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Admin save error:", err);
-      setSaveError(err.message || "Failed to save administrative update.");
+      setSaveError(err instanceof Error ? err.message : "Failed to save administrative update.");
     } finally {
       setSaving(false);
     }

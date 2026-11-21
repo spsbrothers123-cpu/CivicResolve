@@ -68,8 +68,8 @@ export default function CitizenProfilePage() {
       await refreshProfile();
       setStatusMessage({ type: "success", text: "Profile updated successfully." });
       setIsEditing(false);
-    } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message || "Failed to save profile." });
+    } catch (err: unknown) {
+      setStatusMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to save profile." });
     } finally {
       setSaving(false);
     }

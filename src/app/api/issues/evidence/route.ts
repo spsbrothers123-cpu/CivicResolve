@@ -47,10 +47,11 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ signedUrl });
-  } catch (error: any) {
-    const status = error.status || 500;
+  } catch (error: unknown) {
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to generate evidence access URL." },
+      { error: errObj.message || "Failed to generate evidence access URL." },
       { status }
     );
   }

@@ -106,8 +106,9 @@ export function getClientIp(req: NextRequest): string {
   if (realIp) return realIp.trim();
 
   // Next.js request IP if available
-  if ((req as any).ip) {
-    return (req as any).ip;
+  const reqWithIp = req as unknown as { ip?: string };
+  if (reqWithIp.ip) {
+    return reqWithIp.ip;
   }
 
   return "127.0.0.1";

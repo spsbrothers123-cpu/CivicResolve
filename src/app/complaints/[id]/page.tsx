@@ -52,9 +52,9 @@ export default function ComplaintTrackingPage() {
         if (mounted) {
           setIssue(data.issue);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (mounted) {
-          setError(err.message || "Failed to load complaint.");
+          setError(err instanceof Error ? err.message : "Failed to load complaint.");
         }
       } finally {
         if (mounted) {

@@ -27,10 +27,11 @@ export async function GET(
 
     const updates = await getIssueUpdates(params.id, client);
     return NextResponse.json({ updates });
-  } catch (error: any) {
-    const status = error.status || 500;
+  } catch (error: unknown) {
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to fetch updates." },
+      { error: errObj.message || "Failed to fetch updates." },
       { status }
     );
   }
@@ -58,16 +59,17 @@ export async function POST(
       { update: updateRecord, message: "Complaint update recorded successfully." },
       { status: 201 }
     );
-  } catch (error: any) {
-    if (error?.name === "ZodError") {
+  } catch (error: unknown) {
+    const errObj = error as { name?: string; errors?: Array<{ message: string }>; status?: number; message?: string };
+    if (errObj?.name === "ZodError" && errObj.errors) {
       return NextResponse.json(
-        { error: error.errors[0]?.message || "Invalid update input." },
+        { error: errObj.errors[0]?.message || "Invalid update input." },
         { status: 400 }
       );
     }
-    const status = error.status || 500;
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to record complaint update." },
+      { error: errObj.message || "Failed to record complaint update." },
       { status }
     );
   }

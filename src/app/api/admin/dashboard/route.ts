@@ -9,11 +9,12 @@ export async function GET(req: NextRequest) {
     const { client } = await requireAdmin(req);
     const metrics = await getDashboardStats(client);
     return NextResponse.json({ metrics });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GET /api/admin/dashboard error:", error);
-    const status = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to load dashboard metrics." },
+      { error: errObj.message || "Failed to load dashboard metrics." },
       { status }
     );
   }

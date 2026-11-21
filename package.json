@@ -1,6 +1,20 @@
 {
   "name": "civicresolve",
   "version": "1.0.0",
+  "description": "AI-Powered Civic Issue Reporting and Municipal Work Order Dispatch Platform",
+  "author": "CivicResolve Team",
+  "license": "MIT",
+  "keywords": [
+    "civic-tech",
+    "google-gemini",
+    "supabase",
+    "nextjs",
+    "typescript",
+    "smart-city"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",

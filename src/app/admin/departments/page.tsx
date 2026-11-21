@@ -13,6 +13,7 @@ import {
   Building2,
   ArrowRight,
   Loader2,
+  LucideIcon,
 } from "lucide-react";
 
 interface DeptInfo {
@@ -20,7 +21,7 @@ interface DeptInfo {
   head: string;
   phone: string;
   crews: number;
-  icon: any;
+  icon: LucideIcon;
   color: string;
 }
 

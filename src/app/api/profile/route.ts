@@ -9,10 +9,11 @@ export async function GET(req: NextRequest) {
   try {
     const { profile } = await requireCitizen(req);
     return NextResponse.json({ profile });
-  } catch (error: any) {
-    const status = error.status || 500;
+  } catch (error: unknown) {
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to retrieve profile." },
+      { error: errObj.message || "Failed to retrieve profile." },
       { status }
     );
   }
@@ -26,16 +27,17 @@ export async function PATCH(req: NextRequest) {
 
     const updated = await updateProfile(user.id, validated, client);
     return NextResponse.json({ profile: updated });
-  } catch (error: any) {
-    if (error?.name === "ZodError") {
+  } catch (error: unknown) {
+    const errObj = error as { name?: string; errors?: Array<{ message: string }>; status?: number; message?: string };
+    if (errObj?.name === "ZodError" && errObj.errors) {
       return NextResponse.json(
-        { error: error.errors[0]?.message || "Invalid profile data." },
+        { error: errObj.errors[0]?.message || "Invalid profile data." },
         { status: 400 }
       );
     }
-    const status = error.status || 500;
+    const status = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to update profile." },
+      { error: errObj.message || "Failed to update profile." },
       { status }
     );
   }

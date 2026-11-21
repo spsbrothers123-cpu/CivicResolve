@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       profile: context.profile,
       isAuthenticated: true,
     });
-  } catch (error: any) {
+  } catch (_error: unknown) {
     return NextResponse.json(
       { error: "Failed to resolve session." },
       { status: 500 }

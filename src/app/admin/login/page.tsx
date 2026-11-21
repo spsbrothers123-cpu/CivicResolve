@@ -61,9 +61,9 @@ export default function AdminLoginPage() {
 
       await refreshProfile();
       router.push("/admin");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Admin login error:", err);
-      setErrorMessage(err.message || "An error occurred during administrative login.");
+      setErrorMessage(err instanceof Error ? err.message : "An error occurred during administrative login.");
     } finally {
       setLoading(false);
     }

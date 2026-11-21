@@ -36,11 +36,12 @@ export async function GET(req: NextRequest) {
       const { issues, total } = await getCitizenIssues(user.id, filters, client);
       return NextResponse.json({ issues, total });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GET /api/issues error:", error);
-    const statusCode = error.status || 500;
+    const errObj = error as { status?: number; message?: string };
+    const statusCode = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to fetch complaints." },
+      { error: errObj.message || "Failed to fetch complaints." },
       { status: statusCode }
     );
   }
@@ -90,10 +91,11 @@ export async function POST(req: NextRequest) {
 
         newIssue.ai_analysis = triage.analysis;
       }
-    } catch (aiErr: any) {
+    } catch (aiErr: unknown) {
+      const errObj = aiErr as { message?: string };
       console.warn(
         `[CivicResolve AI] Non-blocking AI triage skipped for complaint ${newIssue.id}:`,
-        aiErr?.message
+        errObj?.message
       );
     }
 
@@ -111,17 +113,18 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("POST /api/issues error:", error);
-    if (error?.name === "ZodError") {
+    const errObj = error as { name?: string; errors?: Array<{ message: string }>; status?: number; message?: string };
+    if (errObj?.name === "ZodError" && errObj.errors) {
       return NextResponse.json(
-        { error: error.errors[0]?.message || "Invalid complaint payload." },
+        { error: errObj.errors[0]?.message || "Invalid complaint payload." },
         { status: 400 }
       );
     }
-    const statusCode = error.status || 500;
+    const statusCode = errObj.status || 500;
     return NextResponse.json(
-      { error: error.message || "Failed to submit complaint." },
+      { error: errObj.message || "Failed to submit complaint." },
       { status: statusCode }
     );
   }
